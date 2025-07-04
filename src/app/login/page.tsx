@@ -84,7 +84,7 @@ const LoginPage = () => {
                             src="/images/imv-logo.png"
                             alt="logo"
                             width={100}
-                            height={100}
+                            height={1}
                             priority
                             className="w-auto"
                         />

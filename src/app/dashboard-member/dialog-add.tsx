@@ -25,7 +25,7 @@ import { PlusCircle } from 'lucide-react'
 import { useState } from 'react'
 
 export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
-    const [nama, setNama] = useState('')
+    const [name, setName] = useState('')
     const [lvl, setLvl] = useState<number | ''>('')
     const [trop, setTrop] = useState('')
     const [role, setRole] = useState('')
@@ -51,7 +51,7 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
         e.preventDefault()
 
         // Validasi manual karena select components
-        if (!nama || !lvl || !role || !trop || !status) {
+        if (!name || !lvl || !role || !trop || !status) {
             alert('❌ Semua field harus diisi!')
             return
         }
@@ -59,10 +59,10 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
         setIsSubmit(true)
 
         const formBody = new URLSearchParams()
-        formBody.append('nama', nama)
-        formBody.append('level', String(lvl))
+        formBody.append('name', name)
+        formBody.append('lvl', String(lvl))
         formBody.append('role', role)
-        formBody.append('trops', trop)
+        formBody.append('trop', trop)
         formBody.append('status', status)
 
         try {
@@ -81,7 +81,7 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
                 setIsSuccess(true)
                 onSuccess?.()
                 // Reset form
-                setNama('')
+                setName('')
                 // setLvl('')
                 // setTrop('')
                 // setRole('')
@@ -124,8 +124,8 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
                                 id="name"
                                 name="name"
                                 placeholder="Ingame Name"
-                                value={nama}
-                                onChange={(e) => setNama(e.target.value)}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 required
                             />
                         </div>
