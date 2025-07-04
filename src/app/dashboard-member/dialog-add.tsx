@@ -1,10 +1,12 @@
 'use client'
 
+import { useState } from 'react'
+import { PlusCircle } from 'lucide-react'
+import { FullScreenLoader } from '@/components/fullscreen-loader'
 import { LoadingSpinner } from '@/components/loading-spinner'
 import { Button } from '@/components/ui/button'
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -21,18 +23,15 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select'
-import { PlusCircle } from 'lucide-react'
-import { useState } from 'react'
 
 export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
+    const [open, setOpen] = useState(false)
     const [name, setName] = useState('')
     const [lvl, setLvl] = useState<number | ''>('')
     const [trop, setTrop] = useState('')
     const [role, setRole] = useState('')
     const [status, setStatus] = useState('')
     const [isSubmit, setIsSubmit] = useState(false)
-    const [isSuccess, setIsSuccess] = useState(false)
-
     const baseURL = process.env.NEXT_PUBLIC_BASE_URL
 
     const handleLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,7 +49,6 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        // Validasi manual karena select components
         if (!name || !lvl || !role || !trop || !status) {
             alert('❌ Semua field harus diisi!')
             return
@@ -77,19 +75,14 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
             const result = await res.json()
 
             if (result.success) {
-                // alert('✅ Member berhasil ditambahkan!')
-                setIsSuccess(true)
                 onSuccess?.()
-                // Reset form
+                setOpen(false)
+                // reset form setelah submit sukses
                 setName('')
-                // setLvl('')
-                // setTrop('')
-                // setRole('')
-                // setStatus('')
-
-                setTimeout(() => {
-                    setIsSuccess(false)
-                }, 1000)
+                setLvl('')
+                setTrop('')
+                setRole('')
+                setStatus('')
             } else {
                 alert('❌ Gagal: ' + result.message)
             }
@@ -102,124 +95,138 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
     }
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="outline">
-                    <PlusCircle />
-                    Add Member
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="font-mono sm:max-w-[425px]">
-                <form onSubmit={handleSubmit}>
-                    <DialogHeader>
-                        <DialogTitle>Add Member IMV</DialogTitle>
-                        <DialogDescription>
-                            Tambahkan member baru di Indonesian Mafia
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4">
-                        <div className="grid gap-3">
-                            <Label htmlFor="name">Name</Label>
-                            <Input
-                                id="name"
-                                name="name"
-                                placeholder="Ingame Name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="col-span-1 grid gap-3">
-                                <Label htmlFor="lvl">Level HQ</Label>
+        <>
+            {isSubmit && <FullScreenLoader />}
+
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="outline">
+                        <PlusCircle />
+                        Add Member
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="font-mono sm:max-w-[425px]">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <DialogHeader>
+                            <DialogTitle>Add Member IMV</DialogTitle>
+                            <DialogDescription>
+                                Tambahkan member baru di Indonesian Mafia
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4">
+                            <div className="grid gap-3">
+                                <Label htmlFor="name">Name</Label>
                                 <Input
-                                    id="lvl"
-                                    name="lvl"
-                                    type="number"
-                                    placeholder="30"
-                                    value={lvl}
-                                    onChange={handleLevelChange}
+                                    id="name"
+                                    name="name"
+                                    placeholder="Ingame Name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
                                     required
                                 />
                             </div>
-                            <div className="col-span-1 grid gap-3">
-                                <Label htmlFor="role">Role</Label>
-                                <Select
-                                    value={role}
-                                    onValueChange={(value) => setRole(value)}
-                                    required
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Pilih Role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="R5">R5</SelectItem>
-                                        <SelectItem value="R4">R4</SelectItem>
-                                        <SelectItem value="R3">R3</SelectItem>
-                                        <SelectItem value="R2">R2</SelectItem>
-                                        <SelectItem value="R1">R1</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="col-span-1 grid gap-3">
-                                <Label htmlFor="trop">Level Trop</Label>
-                                <Input
-                                    id="trop"
-                                    name="trop"
-                                    placeholder="T10"
-                                    value={trop}
-                                    onChange={(e) => setTrop(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="col-span-1 grid gap-3">
-                                <Label htmlFor="status">Status</Label>
-                                <Select
-                                    value={status}
-                                    onValueChange={(value) => setStatus(value)}
-                                    required
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Pilih Status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ACTIVE">
-                                            ACTIVE
-                                        </SelectItem>
-                                        <SelectItem value="INACTIVE">
-                                            INACTIVE
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter className="mt-3">
-                        <Button
-                            type="submit"
-                            className={`w-full text-white ${
-                                isSuccess
-                                    ? 'bg-green-600 hover:bg-green-700'
-                                    : 'bg-indigo-500 hover:bg-indigo-600'
-                            }`}
-                            disabled={isSubmit || isSuccess}
-                        >
-                            {isSuccess ? (
-                                'SUKSES'
-                            ) : isSubmit ? (
-                                <div className="flex items-center space-x-1">
-                                    <LoadingSpinner className="size-4" />
-                                    <span>LOADING ...</span>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="col-span-1 grid gap-3">
+                                    <Label htmlFor="lvl">Level HQ</Label>
+                                    <Input
+                                        id="lvl"
+                                        name="lvl"
+                                        type="number"
+                                        placeholder="30"
+                                        value={lvl}
+                                        onChange={handleLevelChange}
+                                        required
+                                    />
                                 </div>
-                            ) : (
-                                'SUBMIT'
-                            )}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+                                <div className="col-span-1 grid gap-3">
+                                    <Label htmlFor="role">Role</Label>
+                                    <Select
+                                        value={role}
+                                        onValueChange={(value) =>
+                                            setRole(value)
+                                        }
+                                        required
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Pilih Role" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="R5">
+                                                R5
+                                            </SelectItem>
+                                            <SelectItem value="R4">
+                                                R4
+                                            </SelectItem>
+                                            <SelectItem value="R3">
+                                                R3
+                                            </SelectItem>
+                                            <SelectItem value="R2">
+                                                R2
+                                            </SelectItem>
+                                            <SelectItem value="R1">
+                                                R1
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="col-span-1 grid gap-3">
+                                    <Label htmlFor="trop">Level Trop</Label>
+                                    <Input
+                                        id="trop"
+                                        name="trop"
+                                        placeholder="T10"
+                                        value={trop}
+                                        onChange={(e) =>
+                                            setTrop(e.target.value)
+                                        }
+                                        required
+                                    />
+                                </div>
+                                <div className="col-span-1 grid gap-3">
+                                    <Label htmlFor="status">Status</Label>
+                                    <Select
+                                        value={status}
+                                        onValueChange={(value) =>
+                                            setStatus(value)
+                                        }
+                                        required
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Pilih Status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ACTIVE">
+                                                ACTIVE
+                                            </SelectItem>
+                                            <SelectItem value="INACTIVE">
+                                                INACTIVE
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter className="mt-3">
+                            <Button
+                                type="submit"
+                                className="w-full bg-indigo-500 text-white hover:bg-indigo-600"
+                                disabled={isSubmit}
+                            >
+                                {isSubmit ? (
+                                    <div className="flex items-center space-x-1">
+                                        <LoadingSpinner className="size-4" />
+                                        <span>LOADING ...</span>
+                                    </div>
+                                ) : (
+                                    'SUBMIT'
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }

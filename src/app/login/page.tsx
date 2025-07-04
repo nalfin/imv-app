@@ -106,7 +106,7 @@ const LoginPage = () => {
                                     {message}
                                 </p>
                             )}
-                            <div className="space-y-1">
+                            <div className="space-y-3">
                                 <Label htmlFor="username">Username</Label>
                                 <Input
                                     id="username"
@@ -120,7 +120,7 @@ const LoginPage = () => {
                                     autoComplete="username"
                                 />
                             </div>
-                            <div className="space-y-1">
+                            <div className="space-y-3">
                                 <Label htmlFor="password">Password</Label>
                                 <div className="relative">
                                     <Input

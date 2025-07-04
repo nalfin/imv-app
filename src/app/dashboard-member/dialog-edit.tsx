@@ -1,6 +1,9 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { Member } from '@/types/member'
 import { LoadingSpinner } from '@/components/loading-spinner'
+import { FullScreenLoader } from '@/components/fullscreen-loader'
 import { Button } from '@/components/ui/button'
 import {
     Dialog,
@@ -19,8 +22,6 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select'
-import { Member } from '@/types/member'
-import { useEffect, useState } from 'react'
 
 export function DialogEditMember({
     member,
@@ -40,8 +41,6 @@ export function DialogEditMember({
     const [status, setStatus] = useState(member.status)
 
     const [isSubmit, setIsSubmit] = useState(false)
-    const [isSuccess, setIsSuccess] = useState(false)
-
     const baseURL = process.env.NEXT_PUBLIC_BASE_URL
 
     useEffect(() => {
@@ -82,12 +81,8 @@ export function DialogEditMember({
             const result = await res.json()
 
             if (result.success) {
-                setIsSuccess(true)
                 onSuccess?.()
-                setTimeout(() => {
-                    setIsSuccess(false)
-                    onOpenChange(false)
-                }, 1000)
+                onOpenChange(false)
             } else {
                 alert('❌ Gagal: ' + result.message)
             }
@@ -100,117 +95,131 @@ export function DialogEditMember({
     }
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="font-mono sm:max-w-[425px]">
-                <form onSubmit={handleSubmit}>
-                    <DialogHeader>
-                        <DialogTitle>Edit Member</DialogTitle>
-                        <DialogDescription>
-                            Ubah data member Indonesian Mafia
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4">
-                        <div className="grid gap-3">
-                            <Label htmlFor="name">Name</Label>
-                            <Input
-                                id="name"
-                                name="name"
-                                value={nama}
-                                onChange={(e) => setNama(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="col-span-1 grid gap-3">
-                                <Label htmlFor="lvl">Level HQ</Label>
+        <>
+            {isSubmit && <FullScreenLoader />}
+
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent className="font-mono sm:max-w-[425px]">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <DialogHeader>
+                            <DialogTitle>Edit Member</DialogTitle>
+                            <DialogDescription>
+                                Ubah data member Indonesian Mafia
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4">
+                            <div className="grid gap-3">
+                                <Label htmlFor="name">Name</Label>
                                 <Input
-                                    id="lvl"
-                                    name="lvl"
-                                    type="number"
-                                    value={lvl}
-                                    onChange={(e) =>
-                                        setLvl(parseInt(e.target.value) || 0)
-                                    }
+                                    id="name"
+                                    name="name"
+                                    value={nama}
+                                    onChange={(e) => setNama(e.target.value)}
                                     required
                                 />
                             </div>
-                            <div className="col-span-1 grid gap-3">
-                                <Label htmlFor="role">Role</Label>
-                                <Select
-                                    value={role}
-                                    onValueChange={(value) => setRole(value)}
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Pilih Role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="R5">R5</SelectItem>
-                                        <SelectItem value="R4">R4</SelectItem>
-                                        <SelectItem value="R3">R3</SelectItem>
-                                        <SelectItem value="R2">R2</SelectItem>
-                                        <SelectItem value="R1">R1</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="col-span-1 grid gap-3">
-                                <Label htmlFor="trop">Level Trop</Label>
-                                <Input
-                                    id="trop"
-                                    name="trop"
-                                    value={trop}
-                                    onChange={(e) => setTrop(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="col-span-1 grid gap-3">
-                                <Label htmlFor="status">Status</Label>
-                                <Select
-                                    value={status}
-                                    onValueChange={(
-                                        value: 'ACTIVE' | 'INACTIVE'
-                                    ) => setStatus(value)}
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Pilih Status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ACTIVE">
-                                            ACTIVE
-                                        </SelectItem>
-                                        <SelectItem value="INACTIVE">
-                                            INACTIVE
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter className="mt-3">
-                        <Button
-                            type="submit"
-                            className={`w-full text-white ${
-                                isSuccess
-                                    ? 'bg-green-600 hover:bg-green-700'
-                                    : 'bg-indigo-500 hover:bg-indigo-600'
-                            }`}
-                            disabled={isSubmit || isSuccess}
-                        >
-                            {isSuccess ? (
-                                'SUKSES'
-                            ) : isSubmit ? (
-                                <div className="flex items-center space-x-1">
-                                    <LoadingSpinner className="size-4" />
-                                    <span>LOADING ...</span>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="col-span-1 grid gap-3">
+                                    <Label htmlFor="lvl">Level HQ</Label>
+                                    <Input
+                                        id="lvl"
+                                        name="lvl"
+                                        type="number"
+                                        value={lvl}
+                                        onChange={(e) =>
+                                            setLvl(
+                                                parseInt(e.target.value) || 0
+                                            )
+                                        }
+                                        required
+                                    />
                                 </div>
-                            ) : (
-                                'UPDATE'
-                            )}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+                                <div className="col-span-1 grid gap-3">
+                                    <Label htmlFor="role">Role</Label>
+                                    <Select
+                                        value={role}
+                                        onValueChange={(value) =>
+                                            setRole(value)
+                                        }
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Pilih Role" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="R5">
+                                                R5
+                                            </SelectItem>
+                                            <SelectItem value="R4">
+                                                R4
+                                            </SelectItem>
+                                            <SelectItem value="R3">
+                                                R3
+                                            </SelectItem>
+                                            <SelectItem value="R2">
+                                                R2
+                                            </SelectItem>
+                                            <SelectItem value="R1">
+                                                R1
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="col-span-1 grid gap-3">
+                                    <Label htmlFor="trop">Level Trop</Label>
+                                    <Input
+                                        id="trop"
+                                        name="trop"
+                                        value={trop}
+                                        onChange={(e) =>
+                                            setTrop(e.target.value)
+                                        }
+                                        required
+                                    />
+                                </div>
+                                <div className="col-span-1 grid gap-3">
+                                    <Label htmlFor="status">Status</Label>
+                                    <Select
+                                        value={status}
+                                        onValueChange={(
+                                            value: 'ACTIVE' | 'INACTIVE'
+                                        ) => setStatus(value)}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Pilih Status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ACTIVE">
+                                                ACTIVE
+                                            </SelectItem>
+                                            <SelectItem value="INACTIVE">
+                                                INACTIVE
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter className="mt-3">
+                            <Button
+                                type="submit"
+                                className="w-full bg-indigo-500 text-white hover:bg-indigo-600"
+                                disabled={isSubmit}
+                            >
+                                {isSubmit ? (
+                                    <div className="flex items-center space-x-1">
+                                        <LoadingSpinner className="size-4" />
+                                        <span>LOADING ...</span>
+                                    </div>
+                                ) : (
+                                    'UPDATE'
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }

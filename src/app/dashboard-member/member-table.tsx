@@ -10,15 +10,16 @@ import { DialogEditMember } from './dialog-edit'
 export default function MemberTable({
     data,
     fetchData,
-    loading
+    loading,
+    onDelete
 }: {
     data: Member[]
     fetchData: () => void
     loading: boolean
+    onDelete: (id: string) => Promise<void>
 }) {
     const [selectedMember, setSelectedMember] = useState<Member | null>(null)
     const [editOpen, setEditOpen] = useState(false)
-
     const [showFromLast, setShowFromLast] = useState(false)
 
     const handleEdit = (member: Member) => {
@@ -26,28 +27,7 @@ export default function MemberTable({
         setEditOpen(true)
     }
 
-    const handleDelete = async (id: string) => {
-        try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_URL}?action=deleteMember&id=${id}`,
-                {
-                    method: 'GET'
-                }
-            )
-            const result = await res.json()
-            if (result.success) {
-                // alert('✅ Member berhasil dihapus')
-                fetchData() // Refresh data
-            } else {
-                alert('❌ Gagal menghapus: ' + result.message)
-            }
-        } catch (error) {
-            alert('❌ Terjadi kesalahan koneksi')
-            console.error(error)
-        }
-    }
-
-    const columns = getColumns(handleEdit, handleDelete)
+    const columns = getColumns(handleEdit, onDelete)
 
     return (
         <div className="grid gap-10">
@@ -59,7 +39,6 @@ export default function MemberTable({
                 setShowFromLast={setShowFromLast}
             />
 
-            {loading && <p className="text-sm">⏳ Loading data...</p>}
             {selectedMember && (
                 <DialogEditMember
                     member={selectedMember}
