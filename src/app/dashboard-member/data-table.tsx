@@ -56,7 +56,6 @@ export function DataTable<TData, TValue>({
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
-    // const [showFromLast, setShowFromLast] = React.useState(false)
 
     const table = useReactTable({
         data,
@@ -69,6 +68,8 @@ export function DataTable<TData, TValue>({
         getFilteredRowModel: getFilteredRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
         onRowSelectionChange: setRowSelection,
+        enableColumnResizing: true,
+        columnResizeMode: 'onChange',
         state: {
             sorting,
             columnFilters,
@@ -78,7 +79,7 @@ export function DataTable<TData, TValue>({
     })
 
     return (
-        <div className="font-mono">
+        <div className="space-y-3 font-mono">
             <div className="flex items-center justify-between gap-6 py-4">
                 <Input
                     placeholder="Filter by name..."
@@ -94,37 +95,46 @@ export function DataTable<TData, TValue>({
                     className="max-w-sm"
                 />
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-3">
-                        <Checkbox
-                            id="showLast"
-                            checked={showFromLast}
-                            onCheckedChange={(checked) => {
-                                setShowFromLast(!!checked)
-                            }}
-                        />
-                        <Label htmlFor="showLast">Show From Last</Label>
-                    </div>
+                    <Checkbox
+                        id="showLast"
+                        checked={showFromLast}
+                        onCheckedChange={(checked) =>
+                            setShowFromLast(!!checked)
+                        }
+                    />
+                    <Label htmlFor="showLast">Show From Last</Label>
                     <DialogAddMember onSuccess={onSuccess} />
                 </div>
             </div>
-            <div className="rounded-md border">
-                <Table>
+
+            <div className="overflow-x-auto rounded-md border">
+                <Table className="w-full table-fixed">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <TableHead key={header.id}>
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                      header.column.columnDef
-                                                          .header,
-                                                      header.getContext()
-                                                  )}
-                                        </TableHead>
-                                    )
-                                })}
+                                {headerGroup.headers.map((header) => (
+                                    <TableHead
+                                        key={header.id}
+                                        style={{ width: header.getSize() }}
+                                        className="group relative"
+                                    >
+                                        {header.isPlaceholder
+                                            ? null
+                                            : flexRender(
+                                                  header.column.columnDef
+                                                      .header,
+                                                  header.getContext()
+                                              )}
+
+                                        {header.column.getCanResize() && (
+                                            <div
+                                                onMouseDown={header.getResizeHandler()}
+                                                onTouchStart={header.getResizeHandler()}
+                                                className="absolute top-0 right-0 h-full w-1 cursor-col-resize bg-transparent transition-all duration-300 group-hover:bg-blue-400"
+                                            />
+                                        )}
+                                    </TableHead>
+                                ))}
                             </TableRow>
                         ))}
                     </TableHeader>
@@ -160,23 +170,30 @@ export function DataTable<TData, TValue>({
                     </TableBody>
                 </Table>
             </div>
+
             <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    Next
-                </Button>
+                <div className="text-muted-foreground flex-1 text-sm">
+                    {table.getFilteredSelectedRowModel().rows.length} of{' '}
+                    {table.getFilteredRowModel().rows.length} row(s) selected.
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                    >
+                        Next
+                    </Button>
+                </div>
             </div>
         </div>
     )

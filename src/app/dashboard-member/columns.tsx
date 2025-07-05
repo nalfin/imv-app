@@ -34,6 +34,9 @@ export const getColumns = (
                     aria-label="Select all"
                 />
             ),
+            size: 40,
+            minSize: 40,
+            maxSize: 40,
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
@@ -49,7 +52,6 @@ export const getColumns = (
             header: 'Member Name'
         },
         {
-            accessorKey: 'lvl',
             header: ({ column }) => (
                 <Button
                     variant="ghost"
@@ -57,10 +59,12 @@ export const getColumns = (
                         column.toggleSorting(column.getIsSorted() === 'asc')
                     }
                 >
-                    Level HQ
+                    HQ
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
-            )
+            ),
+            accessorKey: 'lvl',
+            cell: ({ row }) => <div className="ml-4">{row.getValue('lvl')}</div>
         },
         {
             accessorKey: 'role',
@@ -88,6 +92,9 @@ export const getColumns = (
         },
         {
             id: 'actions',
+            size: 50,
+            minSize: 50,
+            maxSize: 50,
             cell: ({ row }) => {
                 const member = row.original
                 const [loading, setLoading] = useState(false)

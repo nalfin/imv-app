@@ -22,6 +22,7 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select'
+import { updateMember } from '@/lib/api/member/update-member'
 
 export function DialogEditMember({
     member,
@@ -41,7 +42,7 @@ export function DialogEditMember({
     const [status, setStatus] = useState(member.status)
 
     const [isSubmit, setIsSubmit] = useState(false)
-    const baseURL = process.env.NEXT_PUBLIC_BASE_URL
+    const [isSuccess, setIsSuccess] = useState(false)
 
     useEffect(() => {
         setNama(member.name)
@@ -61,28 +62,24 @@ export function DialogEditMember({
 
         setIsSubmit(true)
 
-        const formBody = new URLSearchParams()
-        formBody.append('id', member.id)
-        formBody.append('nama', nama)
-        formBody.append('level', String(lvl))
-        formBody.append('role', role)
-        formBody.append('trops', trop)
-        formBody.append('status', status)
-
         try {
-            const res = await fetch(`${baseURL}?action=updateMember`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: formBody.toString()
+            const result = await updateMember({
+                id: member.id,
+                nama,
+                level: lvl,
+                role,
+                trop,
+                status
             })
 
-            const result = await res.json()
-
             if (result.success) {
+                setIsSuccess(true)
                 onSuccess?.()
-                onOpenChange(false)
+
+                setTimeout(() => {
+                    onOpenChange(false)
+                    setIsSuccess(false)
+                }, 1200)
             } else {
                 alert('❌ Gagal: ' + result.message)
             }
@@ -96,7 +93,7 @@ export function DialogEditMember({
 
     return (
         <>
-            {isSubmit && <FullScreenLoader />}
+            {isSubmit && !isSuccess && <FullScreenLoader />}
 
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="font-mono sm:max-w-[425px]">
@@ -204,13 +201,21 @@ export function DialogEditMember({
                         <DialogFooter className="mt-3">
                             <Button
                                 type="submit"
-                                className="w-full bg-indigo-500 text-white hover:bg-indigo-600"
                                 disabled={isSubmit}
+                                className={`w-full text-white ${
+                                    isSuccess
+                                        ? 'bg-green-600 hover:bg-green-700'
+                                        : 'bg-indigo-500 hover:bg-indigo-600'
+                                }`}
                             >
                                 {isSubmit ? (
                                     <div className="flex items-center space-x-1">
                                         <LoadingSpinner className="size-4" />
-                                        <span>LOADING ...</span>
+                                        <span>
+                                            {isSuccess
+                                                ? 'SUCCESS'
+                                                : 'LOADING ...'}
+                                        </span>
                                     </div>
                                 ) : (
                                     'UPDATE'

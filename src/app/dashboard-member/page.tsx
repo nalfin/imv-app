@@ -6,36 +6,28 @@ import MemberTable from './member-table'
 import { useEffect, useState } from 'react'
 import { Member } from '@/types/member'
 import { FullScreenLoader } from '@/components/fullscreen-loader'
+import { fetchMembers } from '@/lib/api/member/get-member'
 
 const DashboardPage = () => {
     const [data, setData] = useState<Member[]>([])
     const [loading, setLoading] = useState(true)
     const [deleting, setDeleting] = useState(false)
 
-    const fetchData = async () => {
-        setLoading(true)
-        const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}?action=readMember`
-        )
-        const result = await res.json()
-
-        if (result.success) {
-            const mapped = result.data.map((item: any, index: number) => ({
-                id: item.id,
-                name: item.name,
-                lvl: parseInt(item.lvl),
-                role: item.role,
-                trop: item.trop,
-                status: item.status
-            }))
-            setData(mapped)
+    const getData = async () => {
+        try {
+            setLoading(true)
+            const members = await fetchMembers()
+            setData(members)
+        } catch (err) {
+            console.error('Fetch error:', err)
+            alert('Gagal mengambil data')
+        } finally {
+            setLoading(false)
         }
-
-        setLoading(false)
     }
 
     useEffect(() => {
-        fetchData()
+        getData()
     }, [])
 
     const handleDelete = async (id: string) => {
@@ -49,7 +41,7 @@ const DashboardPage = () => {
             )
             const result = await res.json()
             if (result.success) {
-                fetchData()
+                getData()
             } else {
                 alert('❌ Gagal menghapus: ' + result.message)
             }
@@ -63,13 +55,15 @@ const DashboardPage = () => {
     return (
         <LayoutPages>
             {(loading || deleting) && <FullScreenLoader />}
-            <CardAnggota members={data} />
-            <MemberTable
-                data={data}
-                fetchData={fetchData}
-                loading={loading}
-                onDelete={handleDelete}
-            />
+            <div className="space-y-3">
+                <CardAnggota members={data} />
+                <MemberTable
+                    data={data}
+                    fetchData={getData}
+                    loading={loading}
+                    onDelete={handleDelete}
+                />
+            </div>
         </LayoutPages>
     )
 }

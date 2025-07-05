@@ -23,6 +23,7 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select'
+import { addMember } from '@/lib/api/member/add-member'
 
 export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
@@ -32,6 +33,10 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
     const [role, setRole] = useState('')
     const [status, setStatus] = useState('')
     const [isSubmit, setIsSubmit] = useState(false)
+    const [submitStatus, setSubmitStatus] = useState<
+        'idle' | 'loading' | 'success'
+    >('idle')
+
     const baseURL = process.env.NEXT_PUBLIC_BASE_URL
 
     const handleLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,44 +59,39 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
             return
         }
 
-        setIsSubmit(true)
-
-        const formBody = new URLSearchParams()
-        formBody.append('name', name)
-        formBody.append('lvl', String(lvl))
-        formBody.append('role', role)
-        formBody.append('trop', trop)
-        formBody.append('status', status)
+        setSubmitStatus('loading')
 
         try {
-            const res = await fetch(`${baseURL}?action=addMember`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: formBody.toString()
+            const result = await addMember({
+                name,
+                lvl,
+                role,
+                trop,
+                status
             })
 
-            const result = await res.json()
-
             if (result.success) {
+                setSubmitStatus('success')
                 onSuccess?.()
-                setOpen(false)
-                // reset form setelah submit sukses
-                setName('')
-                setLvl('')
-                setTrop('')
-                setRole('')
-                setStatus('')
+                setTimeout(() => {
+                    setOpen(false)
+                    // Reset form
+                    setName('')
+                    setLvl('')
+                    setTrop('')
+                    setRole('')
+                    setStatus('')
+                    setSubmitStatus('idle')
+                }, 1000)
             } else {
                 alert('❌ Gagal: ' + result.message)
+                setSubmitStatus('idle')
             }
         } catch (err) {
             console.error('❌ ERROR:', err)
             alert('Terjadi kesalahan koneksi.')
+            setSubmitStatus('idle')
         }
-
-        setIsSubmit(false)
     }
 
     return (
@@ -211,14 +211,20 @@ export function DialogAddMember({ onSuccess }: { onSuccess?: () => void }) {
                         <DialogFooter className="mt-3">
                             <Button
                                 type="submit"
-                                className="w-full bg-indigo-500 text-white hover:bg-indigo-600"
-                                disabled={isSubmit}
+                                className={`w-full ${
+                                    submitStatus === 'success'
+                                        ? 'bg-green-600 hover:bg-green-700'
+                                        : 'bg-indigo-500 hover:bg-indigo-600'
+                                } text-white`}
+                                disabled={submitStatus === 'loading'}
                             >
-                                {isSubmit ? (
+                                {submitStatus === 'loading' ? (
                                     <div className="flex items-center space-x-1">
                                         <LoadingSpinner className="size-4" />
                                         <span>LOADING ...</span>
                                     </div>
+                                ) : submitStatus === 'success' ? (
+                                    <span>SUCCESS</span>
                                 ) : (
                                     'SUBMIT'
                                 )}
