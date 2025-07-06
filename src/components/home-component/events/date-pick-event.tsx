@@ -26,7 +26,7 @@ function isValidDate(date: Date | undefined) {
     return !!date && !isNaN(date.getTime())
 }
 
-export function DatePickVSDA({
+export function DatePickEvent({
     valueStartDate,
     valueEndDate,
     onChangeStartDate,

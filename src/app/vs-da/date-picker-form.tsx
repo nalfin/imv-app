@@ -12,13 +12,9 @@ import {
     PopoverContent,
     PopoverTrigger
 } from '@/components/ui/popover'
-import { Checkbox } from '@/components/ui/checkbox'
 
 function formatDate(date: Date | undefined) {
-    if (!date) {
-        return ''
-    }
-
+    if (!date) return ''
     return date.toLocaleDateString('en-US', {
         day: '2-digit',
         month: 'long',
@@ -27,10 +23,22 @@ function formatDate(date: Date | undefined) {
 }
 
 function isValidDate(date: Date | undefined) {
-    if (!date) {
-        return false
+    return date instanceof Date && !isNaN(date.getTime())
+}
+
+// 🔁 Fungsi untuk konversi hari ke D1-D6
+function getDLabel(date: Date | undefined): string {
+    if (!date) return ''
+    const day = date.getDay() // Minggu = 0, Senin = 1, ..., Sabtu = 6
+    const dayMap: Record<number, string> = {
+        1: 'D1', // Senin
+        2: 'D2',
+        3: 'D3',
+        4: 'D4',
+        5: 'D5',
+        6: 'D6'
     }
-    return !isNaN(date.getTime())
+    return dayMap[day] ?? '' // Minggu tidak ditampilkan
 }
 
 export function DatePickerForm({
@@ -44,11 +52,21 @@ export function DatePickerForm({
     const [month, setMonth] = React.useState<Date | undefined>(value)
     const [valueStr, setValueStr] = React.useState(formatDate(value))
 
+    const dLabel = getDLabel(value)
+
     return (
         <div className="flex flex-col gap-3">
-            <Label htmlFor="date" className="px-1">
-                Tanggal VS DA
-            </Label>
+            <div className="flex w-full justify-between">
+                <Label htmlFor="date" className="px-1">
+                    Tanggal VS DA
+                </Label>
+                {/* ✅ Label dinamis */}
+                {dLabel && (
+                    <p className="bg-secondary/50 rounded px-3 py-1 text-sm font-medium">
+                        {dLabel}
+                    </p>
+                )}
+            </div>
             <div className="relative col-span-3 flex gap-2">
                 <Input
                     id="date"

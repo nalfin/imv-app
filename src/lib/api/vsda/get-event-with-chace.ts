@@ -1,10 +1,11 @@
-import { VSDA } from '@/types/vsda'
+import { EventMember } from '@/types/event'
 
-export async function fetchVSDAWithCache(
+export async function fetchEventWithCache(
     startDate: string,
-    endDate: string
-): Promise<VSDA[]> {
-    const cacheKey = `vsda-cache-${startDate}-${endDate}`
+    endDate: string,
+    eventName: string
+): Promise<EventMember[]> {
+    const cacheKey = `vsda-cache-${startDate}-${endDate}-${eventName}`
     const cached = null // Paksa skip cache untuk debug, nanti bisa pakai: localStorage.getItem(cacheKey)
 
     if (cached) {
@@ -16,9 +17,10 @@ export async function fetchVSDAWithCache(
     }
 
     const params = new URLSearchParams({
-        action: 'readVSDA',
+        action: 'readVSDAEvent',
         startDate,
-        endDate
+        endDate,
+        eventName
     })
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}?${params}`)
@@ -26,7 +28,7 @@ export async function fetchVSDAWithCache(
 
     if (result.success) {
         localStorage.setItem(cacheKey, JSON.stringify(result.data))
-        return result.data as VSDA[]
+        return result.data as EventMember[]
     } else {
         console.error('❌ Gagal fetch VSDA Event:', result.message)
         throw new Error(result.message || 'Gagal mengambil data')

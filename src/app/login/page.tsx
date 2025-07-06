@@ -59,7 +59,7 @@ const LoginPage = () => {
                     result.data?.username || username
                 )
 
-                push('/dashboard-member')
+                push('/')
             } else {
                 setMessage(result.message)
                 setIsSubmit(false)

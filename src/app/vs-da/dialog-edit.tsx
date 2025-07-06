@@ -34,7 +34,7 @@ const DialogEditVSDA = ({
     const [selectedPoin, setSelectedPoin] = useState<string>('')
     const [selectedTanggal, setSelectedTanggal] = useState<Date | undefined>()
     const [progress, setProgress] = useState(0)
-    const [showSuccess, setShowSuccess] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
 
     const totalItems = vsdaData.length
 
@@ -42,7 +42,7 @@ const DialogEditVSDA = ({
         e.preventDefault()
         setIsSubmit(true)
         setProgress(0)
-        setShowSuccess(false)
+        setIsSuccess(false)
 
         try {
             for (let i = 0; i < vsdaData.length; i++) {
@@ -55,7 +55,7 @@ const DialogEditVSDA = ({
                 setProgress((prev) => prev + 1)
             }
 
-            setShowSuccess(true)
+            setIsSuccess(true)
             if (onSuccess) onSuccess()
             setTimeout(() => {
                 onOpenChange(false)
@@ -69,7 +69,7 @@ const DialogEditVSDA = ({
     }
 
     const renderButtonText = () => {
-        if (showSuccess) return 'SUCCESS'
+        if (isSuccess) return 'SUCCESS'
         if (isSubmit)
             return (
                 <div className="flex items-center space-x-1">
@@ -84,6 +84,7 @@ const DialogEditVSDA = ({
 
     return (
         <>
+            {isSubmit && !isSuccess && <FullScreenLoader />}
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="font-mono sm:max-w-[550px]">
                     <form className="space-y-6" onSubmit={handleSubmit}>
@@ -121,7 +122,7 @@ const DialogEditVSDA = ({
                         <DialogFooter className="mt-3">
                             <Button
                                 type="submit"
-                                className={`w-full text-white transition-all duration-300 hover:brightness-110 ${showSuccess ? 'bg-green-600' : 'bg-indigo-500 hover:bg-indigo-600'} `}
+                                className={`w-full text-white transition-all duration-300 hover:brightness-110 ${isSuccess ? 'bg-green-600' : 'bg-indigo-500 hover:bg-indigo-600'} `}
                                 disabled={isSubmit}
                             >
                                 {renderButtonText()}

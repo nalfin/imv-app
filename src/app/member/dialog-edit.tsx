@@ -79,7 +79,7 @@ export function DialogEditMember({
                 setTimeout(() => {
                     onOpenChange(false)
                     setIsSuccess(false)
-                }, 1200)
+                }, 1000)
             } else {
                 alert('❌ Gagal: ' + result.message)
             }

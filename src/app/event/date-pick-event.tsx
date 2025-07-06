@@ -26,7 +26,7 @@ function isValidDate(date: Date | undefined) {
     return !!date && !isNaN(date.getTime())
 }
 
-export function DatePickVSDA({
+export function DatePickEvent({
     valueStartDate,
     valueEndDate,
     onChangeStartDate,
@@ -65,7 +65,7 @@ export function DatePickVSDA({
 
     return (
         <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
                 {/* Start Date */}
                 <div className="flex flex-col gap-1">
                     <div className="relative flex gap-2">

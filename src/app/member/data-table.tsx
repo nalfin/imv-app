@@ -1,15 +1,15 @@
 'use client'
 
 import * as React from 'react'
-
 import {
     ColumnDef,
-    flexRender,
-    SortingState,
     ColumnFiltersState,
+    VisibilityState,
+    SortingState,
+    flexRender,
     getCoreRowModel,
-    getPaginationRowModel,
     getFilteredRowModel,
+    getPaginationRowModel,
     getSortedRowModel,
     useReactTable
 } from '@tanstack/react-table'
@@ -25,11 +25,12 @@ import {
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+
+import { DialogAddMember } from './dialog-add'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { DatePickVSDA } from './date-pick-vsda'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { formatDate } from '@/utils/format-date'
+import { Member } from '@/types/member'
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -37,33 +38,22 @@ interface DataTableProps<TData, TValue> {
     onSuccess: () => void
     showFromLast: boolean
     setShowFromLast: (value: boolean) => void
-    showDateHeader: boolean
-    setShowDateHeader: (value: boolean) => void
-    startDate: Date | null
-    endDate: Date | null
-    setStartDate: (date: Date | null) => void
-    setEndDate: (date: Date | null) => void
-    onBulkEdit: (rows: TData[]) => void // ✅ Tambahan props baru
+    onBulkEditOpen: (selected: Member[]) => void
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends Member, TValue>({
     columns,
     data,
     onSuccess,
     showFromLast,
     setShowFromLast,
-    showDateHeader,
-    setShowDateHeader,
-    startDate,
-    endDate,
-    setStartDate,
-    setEndDate,
-
-    onBulkEdit // ✅ Destructure props
+    onBulkEditOpen
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] =
         React.useState<ColumnFiltersState>([])
+    const [columnVisibility, setColumnVisibility] =
+        React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
 
     const table = useReactTable({
@@ -75,25 +65,27 @@ export function DataTable<TData, TValue>({
         getSortedRowModel: getSortedRowModel(),
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
+        onColumnVisibilityChange: setColumnVisibility,
         onRowSelectionChange: setRowSelection,
         enableColumnResizing: true,
         columnResizeMode: 'onChange',
         state: {
             sorting,
             columnFilters,
+            columnVisibility,
             rowSelection
         }
     })
 
-    // ✅ Ambil data yang dipilih dari checkbox
-    const selectedRows = table.getSelectedRowModel().rows.map((r) => r.original)
+    const selectedRows = table
+        .getFilteredSelectedRowModel()
+        .rows.map((row) => row.original)
 
     return (
         <>
             <div className="min-w-full space-y-3 font-mono">
-                {/* Search & Top Controls */}
-                <div className="flex flex-col-reverse justify-between gap-6 py-4 md:flex-row md:items-center">
-                    <div className="flex w-full max-w-md items-center gap-3">
+                <div className="flex flex-col-reverse gap-4 py-4 md:flex-row md:items-center md:justify-between md:gap-6">
+                    <div className="flex w-full items-center gap-6 md:max-w-md md:gap-4">
                         <Input
                             className="w-full"
                             placeholder="Filter by name..."
@@ -112,24 +104,28 @@ export function DataTable<TData, TValue>({
                             variant="outline"
                             size="default"
                             className="rounded-sm"
-                            onClick={() => onBulkEdit(selectedRows)}
+                            onClick={() => onBulkEditOpen(selectedRows)}
                             disabled={selectedRows.length === 0}
                         >
                             Edit Selected
                         </Button>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <DatePickVSDA
-                            valueStartDate={startDate ?? undefined}
-                            valueEndDate={endDate ?? undefined}
-                            onChangeStartDate={(d) => setStartDate(d ?? null)}
-                            onChangeEndDate={(d) => setEndDate(d ?? null)}
-                        />
+                    <div className="flex justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <Checkbox
+                                id="showLast"
+                                checked={showFromLast}
+                                onCheckedChange={(checked) =>
+                                    setShowFromLast(!!checked)
+                                }
+                            />
+                            <Label htmlFor="showLast">Show From Last</Label>
+                        </div>
+                        <DialogAddMember onSuccess={onSuccess} />
                     </div>
                 </div>
 
-                {/* Table UI */}
                 <ScrollArea className="w-full rounded-md border whitespace-nowrap">
                     <div className="overflow-x-auto rounded-md border font-mono">
                         <Table className="w-full table-auto">
@@ -151,11 +147,12 @@ export function DataTable<TData, TValue>({
                                                               .columnDef.header,
                                                           header.getContext()
                                                       )}
+
                                                 {header.column.getCanResize() && (
                                                     <div
                                                         onMouseDown={header.getResizeHandler()}
                                                         onTouchStart={header.getResizeHandler()}
-                                                        className="absolute top-0 right-0 h-full w-1 cursor-col-resize bg-transparent transition group-hover:bg-blue-400"
+                                                        className="absolute top-0 right-0 h-full w-1 cursor-col-resize bg-transparent transition-all duration-300 group-hover:bg-blue-400"
                                                     />
                                                 )}
                                             </TableHead>
@@ -202,111 +199,13 @@ export function DataTable<TData, TValue>({
                     <ScrollBar orientation="horizontal" />
                 </ScrollArea>
 
-                <div className="block lg:hidden">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Checkbox
-                                id="showDateHeader"
-                                checked={showDateHeader}
-                                onCheckedChange={(checked) =>
-                                    setShowDateHeader(!!checked)
-                                }
-                            />
-                            <Label htmlFor="showDateHeader">
-                                Show Date Header
-                            </Label>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Checkbox
-                                id="showLast"
-                                checked={showFromLast}
-                                onCheckedChange={(checked) =>
-                                    setShowFromLast(!!checked)
-                                }
-                            />
-                            <Label htmlFor="showLast">Show From Last</Label>
-                        </div>
-                    </div>
-
-                    {/* Bottom Controls */}
-                    <div className="flex items-center justify-between space-x-2 py-4">
-                        {startDate && endDate && (
-                            <p className="text-muted-foreground text-sm">
-                                Showing data from{' '}
-                                <span className="text-primary font-medium">
-                                    {formatDate(startDate)}
-                                </span>{' '}
-                                to{' '}
-                                <span className="text-primary font-medium">
-                                    {formatDate(endDate)}
-                                </span>
-                            </p>
-                        )}
-                        <div className="flex items-center space-x-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => table.previousPage()}
-                                disabled={!table.getCanPreviousPage()}
-                            >
-                                Previous
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => table.nextPage()}
-                                disabled={!table.getCanNextPage()}
-                            >
-                                Next
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom Controls */}
-                <div className="hidden items-center justify-between space-x-2 py-4 lg:flex">
-                    <div className="flex items-center gap-3">
-                        <div className="text-muted-foreground flex-1 text-sm">
-                            {table.getFilteredSelectedRowModel().rows.length} of{' '}
-                            {table.getFilteredRowModel().rows.length} row(s)
-                            selected.
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Checkbox
-                                id="showLast"
-                                checked={showFromLast}
-                                onCheckedChange={(checked) =>
-                                    setShowFromLast(!!checked)
-                                }
-                            />
-                            <Label htmlFor="showLast">Show From Last</Label>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Checkbox
-                                id="showDateHeader"
-                                checked={showDateHeader}
-                                onCheckedChange={(checked) =>
-                                    setShowDateHeader(!!checked)
-                                }
-                            />
-                            <Label htmlFor="showDateHeader">
-                                Show Date Header
-                            </Label>
-                        </div>
+                <div className="flex items-center justify-end space-x-2 py-4">
+                    <div className="text-muted-foreground flex-1 text-sm">
+                        {selectedRows.length} of{' '}
+                        {table.getFilteredRowModel().rows.length} row(s)
+                        selected.
                     </div>
                     <div className="flex items-center space-x-2">
-                        {startDate && endDate && (
-                            <p className="text-muted-foreground px-1 text-sm">
-                                Showing data from{' '}
-                                <span className="text-primary font-medium">
-                                    {formatDate(startDate)}
-                                </span>{' '}
-                                to{' '}
-                                <span className="text-primary font-medium">
-                                    {formatDate(endDate)}
-                                </span>
-                            </p>
-                        )}
                         <Button
                             variant="outline"
                             size="sm"

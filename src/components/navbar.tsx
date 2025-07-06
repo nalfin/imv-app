@@ -6,16 +6,11 @@ import { useEffect, useState } from 'react'
 import { Button } from './ui/button'
 import {
     NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuIndicator,
     NavigationMenuItem,
     NavigationMenuLink,
     NavigationMenuList,
-    NavigationMenuTrigger,
-    navigationMenuTriggerStyle,
-    NavigationMenuViewport
+    navigationMenuTriggerStyle
 } from '@/components/ui/navigation-menu'
-import Image from 'next/image'
 
 const Navbar = () => {
     const router = useRouter()
@@ -29,38 +24,24 @@ const Navbar = () => {
     const handleLogout = () => {
         localStorage.removeItem('isLoggedIn')
         localStorage.removeItem('username')
+        localStorage.clear()
         setIsLoggedIn(false)
         router.push('/login')
     }
-
-    if (isLoggedIn === null) {
-        return null // atau bisa ganti dengan skeleton/loading state
-    }
+    if (isLoggedIn === null) return null // loading state bisa ditambahkan jika perlu
 
     return (
-        <div className="border-border mb-10 flex h-20 items-center justify-between border-b">
-            <Link href="/">
-                <div className="flex gap-3">
-                    <Image
-                        src="/images/imv-logo.png"
-                        alt="Logo"
-                        width={80}
-                        height={80}
-                        priority
-                    />
-                </div>
-            </Link>
-
-            {isLoggedIn && (
-                <div className="flex gap-6">
-                    <NavigationMenu viewport={false}>
-                        <NavigationMenuList>
+        <>
+            <div className="flex items-center gap-10">
+                {isLoggedIn && (
+                    <NavigationMenu className="hidden md:block">
+                        <NavigationMenuList className="flex gap-4">
                             <NavigationMenuItem>
                                 <NavigationMenuLink
                                     asChild
                                     className={navigationMenuTriggerStyle()}
                                 >
-                                    <Link href="/dashboard-member">Member</Link>
+                                    <Link href="/member">Member</Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
@@ -72,34 +53,32 @@ const Navbar = () => {
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                <NavigationMenuTrigger>
-                                    Event
-                                </NavigationMenuTrigger>
-                                <NavigationMenuContent>
-                                    <ul className="grid w-[200px] gap-4">
-                                        <li>
-                                            <NavigationMenuLink asChild>
-                                                <Link href="/events/event-1">
-                                                    Event I
-                                                </Link>
-                                            </NavigationMenuLink>
-                                        </li>
-                                    </ul>
-                                </NavigationMenuContent>
+                                <NavigationMenuLink
+                                    asChild
+                                    className={navigationMenuTriggerStyle()}
+                                >
+                                    <Link href="/event">Event</Link>
+                                </NavigationMenuLink>
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
-                </div>
-            )}
+                )}
 
-            {isLoggedIn ? (
-                <Button onClick={handleLogout}>Logout</Button>
-            ) : (
-                <Button asChild>
-                    <Link href="/login">Login</Link>
-                </Button>
-            )}
-        </div>
+                {isLoggedIn ? (
+                    <Button
+                        size="default"
+                        variant="outline"
+                        onClick={handleLogout}
+                    >
+                        Logout
+                    </Button>
+                ) : (
+                    <Button size="default" asChild>
+                        <Link href="/login">Login</Link>
+                    </Button>
+                )}
+            </div>
+        </>
     )
 }
 

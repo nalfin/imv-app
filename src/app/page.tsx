@@ -1,21 +1,21 @@
 'use client'
 
 import LayoutPages from '@/components/layout'
-import CardAnggota from './card-anggota'
 import { useEffect, useState } from 'react'
-import { Member } from '@/types/member'
-import { fetchMembers } from '@/lib/api/member/get-member'
+import CardMemberDynamic from './member/card-member-dynamic'
+import { FullScreenLoader } from '@/components/fullscreen-loader'
+import { fetchMemberSummary } from '@/lib/api/member/get-member-summary'
+import HomeEventPage from '@/components/home-component/events/home-event-page'
+import HomeVSDAPage from '@/components/home-component/vs-da/home-vsda-page'
+import { Separator } from '@/components/ui/separator'
 
 export default function Home() {
-    const [data, setData] = useState<Member[]>([])
     const [loading, setLoading] = useState(true)
 
     const getData = async () => {
         try {
             setLoading(true)
-            const members = await fetchMembers()
-            setData(members)
-            localStorage.setItem('members-data', JSON.stringify(members))
+            const members = await fetchMemberSummary()
         } catch (err) {
             console.error('Fetch error:', err)
             alert('Gagal mengambil data')
@@ -25,30 +25,21 @@ export default function Home() {
     }
 
     useEffect(() => {
-        const saved = localStorage.getItem('members-data')
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved)
-                if (Array.isArray(parsed)) {
-                    setData(parsed)
-                    setLoading(false)
-                }
-            } catch (err) {
-                console.error('Error parsing saved data:', err)
-            }
-        }
-
-        // Ambil data terbaru dari server
         getData()
     }, [])
 
     return (
         <LayoutPages>
-            <div className="grid grid-cols-1 gap-10">
-                <CardAnggota members={data} />
-                <div className="grid grid-cols-3 gap-6">
-                    <div className="col-span-2">tabel anggota</div>
-                    <div className="col-span-1">Event</div>
+            {loading && <FullScreenLoader />}
+            <div className="grid grid-cols-1 gap-6">
+                <CardMemberDynamic />
+                <div className="grid grid-cols-1 gap-6 font-mono lg:grid-cols-4">
+                    <div className="col-span-2">
+                        <HomeVSDAPage />
+                    </div>
+                    <div className="col-span-2">
+                        <HomeEventPage />
+                    </div>
                 </div>
             </div>
         </LayoutPages>

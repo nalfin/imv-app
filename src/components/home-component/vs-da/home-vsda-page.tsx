@@ -1,13 +1,10 @@
 'use client'
 
-import LayoutPages from '@/components/layout'
-import VSDATable from './vsda-table'
 import { useEffect, useState } from 'react'
-import { VSDA } from '@/types/vsda'
 import { fetchVSDAWithCache } from '@/lib/api/vsda/get-vsda-with-cache'
-import { FullScreenLoader } from '@/components/fullscreen-loader'
+import HomeVSDATable from './home-vsda-table'
+import { VSDA } from '@/types/vsda'
 import { usePersistedDateRangeVSDA } from '@/lib/hooks/use-presisted-date-range-vsda'
-import { useAuthRedirect } from '@/lib/api/auth-redirect'
 
 function formatDateToDDMM(date: Date | undefined): string {
     if (!date) return ''
@@ -16,10 +13,9 @@ function formatDateToDDMM(date: Date | undefined): string {
     return `${d}/${m}`
 }
 
-const VsDAPage = () => {
-    const checked = useAuthRedirect() // ⬅️ Proteksi login
-
+const HomeVSDAPage = () => {
     const [data, setData] = useState<VSDA[]>([])
+    const [isClient, setIsClient] = useState(false)
     const [loading, setLoading] = useState<boolean>(true)
     const [showFromLast, setShowFromLast] = useState<boolean>(false)
 
@@ -54,20 +50,20 @@ const VsDAPage = () => {
     }
 
     useEffect(() => {
-        if (checked) {
-            getDataVSDA()
-        }
-    }, [startDateVSDA, endDateVSDA, checked])
+        getDataVSDA()
+    }, [startDateVSDA, endDateVSDA])
 
-    // ⛔ Jangan render apapun sebelum auth dicek
-    if (!checked) return null
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
 
     return (
-        <LayoutPages>
-            {loading && <FullScreenLoader />}
-            <div className="space-y-3">
-                <h1 className="text-2xl font-bold">Dashboard VS DA</h1>
-                <VSDATable
+        <>
+            <div className="bg-card/50 border-border rounded-md border p-6">
+                <p className="flex h-9 items-center font-semibold">
+                    PROGRESS POINT DA ALL MEMBER
+                </p>
+                <HomeVSDATable
                     data={data}
                     loading={loading}
                     startDate={startDateVSDA}
@@ -79,8 +75,8 @@ const VsDAPage = () => {
                     fetchData={getDataVSDA}
                 />
             </div>
-        </LayoutPages>
+        </>
     )
 }
 
-export default VsDAPage
+export default HomeVSDAPage

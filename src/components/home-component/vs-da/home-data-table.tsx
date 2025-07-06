@@ -34,7 +34,6 @@ import { formatDate } from '@/utils/format-date'
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    onSuccess: () => void
     showFromLast: boolean
     setShowFromLast: (value: boolean) => void
     showDateHeader: boolean
@@ -43,13 +42,11 @@ interface DataTableProps<TData, TValue> {
     endDate: Date | null
     setStartDate: (date: Date | null) => void
     setEndDate: (date: Date | null) => void
-    onBulkEdit: (rows: TData[]) => void // ✅ Tambahan props baru
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
-    onSuccess,
     showFromLast,
     setShowFromLast,
     showDateHeader,
@@ -57,9 +54,7 @@ export function DataTable<TData, TValue>({
     startDate,
     endDate,
     setStartDate,
-    setEndDate,
-
-    onBulkEdit // ✅ Destructure props
+    setEndDate
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] =
@@ -108,15 +103,6 @@ export function DataTable<TData, TValue>({
                                     ?.setFilterValue(event.target.value)
                             }
                         />
-                        <Button
-                            variant="outline"
-                            size="default"
-                            className="rounded-sm"
-                            onClick={() => onBulkEdit(selectedRows)}
-                            disabled={selectedRows.length === 0}
-                        >
-                            Edit Selected
-                        </Button>
                     </div>
 
                     <div className="flex items-center gap-6">
@@ -202,7 +188,7 @@ export function DataTable<TData, TValue>({
                     <ScrollBar orientation="horizontal" />
                 </ScrollArea>
 
-                <div className="block lg:hidden">
+                <div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Checkbox
@@ -260,69 +246,6 @@ export function DataTable<TData, TValue>({
                                 Next
                             </Button>
                         </div>
-                    </div>
-                </div>
-
-                {/* Bottom Controls */}
-                <div className="hidden items-center justify-between space-x-2 py-4 lg:flex">
-                    <div className="flex items-center gap-3">
-                        <div className="text-muted-foreground flex-1 text-sm">
-                            {table.getFilteredSelectedRowModel().rows.length} of{' '}
-                            {table.getFilteredRowModel().rows.length} row(s)
-                            selected.
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Checkbox
-                                id="showLast"
-                                checked={showFromLast}
-                                onCheckedChange={(checked) =>
-                                    setShowFromLast(!!checked)
-                                }
-                            />
-                            <Label htmlFor="showLast">Show From Last</Label>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Checkbox
-                                id="showDateHeader"
-                                checked={showDateHeader}
-                                onCheckedChange={(checked) =>
-                                    setShowDateHeader(!!checked)
-                                }
-                            />
-                            <Label htmlFor="showDateHeader">
-                                Show Date Header
-                            </Label>
-                        </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        {startDate && endDate && (
-                            <p className="text-muted-foreground px-1 text-sm">
-                                Showing data from{' '}
-                                <span className="text-primary font-medium">
-                                    {formatDate(startDate)}
-                                </span>{' '}
-                                to{' '}
-                                <span className="text-primary font-medium">
-                                    {formatDate(endDate)}
-                                </span>
-                            </p>
-                        )}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => table.previousPage()}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            Previous
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => table.nextPage()}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            Next
-                        </Button>
                     </div>
                 </div>
             </div>

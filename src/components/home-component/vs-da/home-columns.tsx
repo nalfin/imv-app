@@ -63,26 +63,13 @@ function getDateRangeWithoutSunday(start: Date, end: Date): Date[] {
     return dates
 }
 
-// function getDayToDLabel(day: number): string {
-//     const map: Record<number, string> = {
-//         1: 'D1', // Senin
-//         2: 'D2',
-//         3: 'D3',
-//         4: 'D4',
-//         5: 'D5',
-//         6: 'D6'
-//     }
-//     return map[day] ?? ''
-// }
-
 function formatHeaderWithDate(idx: number, date: Date): string {
     const day = date.getDate()
     const month = date.getMonth() + 1
     return `D${idx + 1} (${day}/${month})`
 }
 
-export const getColumnsFromDateRangeVSDA = (
-    onEdit: (vsdaData: VSDA) => void,
+export const getColumnsHomeVSDA = (
     startDate: Date | null,
     endDate: Date | null,
     showDateHeader: boolean
@@ -94,31 +81,6 @@ export const getColumnsFromDateRangeVSDA = (
     const dateKeys = dateObjects.map(formatToYYYYMMDD)
 
     return [
-        {
-            id: 'select',
-            header: ({ table }) => (
-                <Checkbox
-                    checked={
-                        table.getIsAllPageRowsSelected() ||
-                        (table.getIsSomePageRowsSelected() && 'indeterminate')
-                    }
-                    onCheckedChange={(value) =>
-                        table.toggleAllPageRowsSelected(!!value)
-                    }
-                    aria-label="Select all"
-                />
-            ),
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={row.getIsSelected()}
-                    onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="Select row"
-                />
-            ),
-            enableSorting: false,
-            enableHiding: false,
-            size: 40
-        },
         {
             accessorKey: 'name',
             header: ({ column }) => sortingHeader('Member Name', column),
@@ -190,31 +152,6 @@ export const getColumnsFromDateRangeVSDA = (
                 return <div className="ml-4 font-semibold">{percentage}%</div>
             },
             size: 80
-        },
-        {
-            id: 'actions',
-            size: 50,
-            // header: 'Actions',
-            cell: ({ row }) => {
-                const vsdaData = row.original
-                return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => onEdit(vsdaData)}>
-                                Edit Poin DA
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )
-            }
         }
     ]
 }
